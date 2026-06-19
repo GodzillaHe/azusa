@@ -1,6 +1,8 @@
 # Gotopia
 
-Personal workspace for small tools, agent utilities, MCP servers, and reusable skills.
+Godzilla's workspace for learning and building AI agent programming tools.
+
+Use this repo for small tools, agent utilities, MCP servers, and reusable skills.
 
 ## Structure
 
