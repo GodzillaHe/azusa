@@ -1,0 +1,4 @@
+interface:
+  display_name: "Local Questionnaire"
+  short_description: "Create a local autosaving questionnaire and read the results"
+  default_prompt: "Use $local-questionnaire to gather my decisions through a local browser form."

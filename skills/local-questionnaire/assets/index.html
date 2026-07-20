@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Questionnaire</title>
+    <style>
+      :root {
+        --accent: #315c55;
+        --accent-dark: color-mix(in srgb, var(--accent) 72%, #000);
+        --accent-soft: color-mix(in srgb, var(--accent) 11%, #fff);
+        --canvas: #f5f7f5;
+        --surface: #fff;
+        --ink: #18211d;
+        --muted: #68716d;
+        --line: #d9dfdc;
+        --danger: #a12c36;
+        --success: #2e684d;
+        --rail: 272px;
+      }
+
+      * { box-sizing: border-box; }
+      [hidden] { display: none !important; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--canvas);
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        font-size: 16px;
+        line-height: 1.55;
+        letter-spacing: 0;
+      }
+      button, input, textarea { font: inherit; letter-spacing: 0; }
+      button { cursor: pointer; }
+      :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 55%, white); outline-offset: 2px; }
+
+      .loading { min-height: 100vh; display: grid; place-items: center; color: var(--muted); }
+      .app { min-height: 100vh; display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); }
+      .rail {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        padding: 28px 20px;
+        overflow: auto;
+        color: #fff;
+        background: var(--accent-dark);
+      }
+      .rail-title { margin: 0 0 6px; font-size: 18px; line-height: 1.3; }
+      .rail-copy { margin: 0 0 24px; color: rgba(255,255,255,.68); font-size: 12px; }
+      .progress-copy { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; }
+      .progress-track { height: 4px; margin: 9px 0 24px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.18); }
+      .progress-bar { width: 0; height: 100%; background: #fff; transition: width 160ms ease; }
+      .nav { position: relative; display: grid; gap: 2px; }
+      .nav::before { content: ""; position: absolute; top: 20px; bottom: 20px; left: 15px; width: 1px; background: rgba(255,255,255,.22); }
+      .nav-button {
+        position: relative;
+        min-height: 48px;
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 9px;
+        width: 100%;
+        padding: 5px 4px 5px 0;
+        border: 0;
+        color: rgba(255,255,255,.7);
+        background: transparent;
+        text-align: left;
+      }
+      .nav-button:hover, .nav-button[aria-current="step"] { color: #fff; }
+      .nav-index { z-index: 1; width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.34); border-radius: 50%; background: var(--accent-dark); font: 600 12px ui-monospace, monospace; }
+      .nav-button.is-complete .nav-index { color: var(--accent-dark); background: #fff; }
+      .nav-count { font: 500 11px ui-monospace, monospace; color: rgba(255,255,255,.52); }
+
+      .workspace { min-width: 0; }
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        min-height: 58px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 10px clamp(18px, 5vw, 64px);
+        border-bottom: 1px solid var(--line);
+        background: color-mix(in srgb, var(--canvas) 94%, transparent);
+        backdrop-filter: blur(10px);
+      }
+      .save-state { color: var(--muted); font-size: 13px; }
+      .save-state[data-state="saved"] { color: var(--success); }
+      .save-state[data-state="error"] { color: var(--danger); }
+      .content { width: min(900px, 100%); margin: 0 auto; padding: 52px clamp(18px, 6vw, 68px) 96px; }
+      .intro { padding-bottom: 36px; border-bottom: 1px solid var(--line); }
+      .eyebrow { margin: 0 0 10px; color: var(--accent); font: 700 12px ui-monospace, monospace; text-transform: uppercase; }
+      h1, h2 { margin: 0; line-height: 1.25; }
+      h1 { max-width: 720px; font-size: 40px; }
+      h2 { font-size: 28px; }
+      .intro-copy, .section-copy { color: var(--muted); }
+      .intro-copy { max-width: 700px; margin: 14px 0 0; }
+      .section { padding-top: 42px; }
+      .section[hidden] { display: none; }
+      .section-heading { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 14px; margin-bottom: 26px; }
+      .section-index { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); font: 700 12px ui-monospace, monospace; color: var(--accent); }
+      .section-copy { margin: 7px 0 0; font-size: 14px; }
+      .questions { display: grid; gap: 18px; }
+      .question { margin: 0; padding: 22px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+      .question.is-missing { border-color: var(--danger); box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 14%, transparent); }
+      legend { width: 100%; padding: 0; font-size: 17px; font-weight: 650; }
+      .requirement { float: right; margin-left: 12px; color: var(--muted); font: 600 11px ui-monospace, monospace; }
+      .question-help { margin: 7px 0 16px; color: var(--muted); font-size: 13px; }
+      .options { display: grid; gap: 9px; margin-top: 16px; }
+      .option { min-height: 52px; display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: start; gap: 11px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+      .option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+      .option input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); }
+      .option-title { display: block; font-weight: 600; }
+      .option-note { display: block; margin-top: 3px; color: var(--muted); font-size: 13px; }
+      .option-detail { display: grid; gap: 7px; margin: -2px 0 7px 31px; color: var(--muted); font-size: 13px; }
+      .option-detail[hidden] { display: none; }
+      input[type="text"], input[type="number"], textarea {
+        width: 100%;
+        margin-top: 14px;
+        padding: 12px 13px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        background: #fff;
+      }
+      input[type="text"], input[type="number"] { min-height: 48px; }
+      textarea { min-height: 112px; resize: vertical; }
+      .option-detail textarea { min-height: 86px; margin-top: 0; }
+      .completion { margin-top: 22px; padding: 17px; border-left: 3px solid var(--accent); background: var(--accent-soft); }
+      .completion strong { display: block; margin-bottom: 4px; }
+      .completion p { margin: 0; color: var(--muted); font-size: 13px; }
+      .actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 26px; }
+      .button { min-height: 46px; padding: 10px 17px; border: 1px solid var(--line); border-radius: 8px; font-weight: 650; }
+      .button:disabled { opacity: .42; cursor: default; }
+      .button-secondary { color: var(--ink); background: var(--surface); }
+      .button-primary { border-color: var(--accent); color: #fff; background: var(--accent); }
+      .button-primary:hover { background: var(--accent-dark); }
+
+      @media (max-width: 760px) {
+        .app { display: block; }
+        .rail { position: static; width: auto; height: auto; padding: 20px 18px 16px; }
+        .rail-title, .rail-copy { display: none; }
+        .progress-track { margin-bottom: 14px; }
+        .nav { grid-auto-flow: column; grid-auto-columns: minmax(126px, 1fr); overflow-x: auto; }
+        .nav::before { display: none; }
+        .nav-button { grid-template-columns: 28px minmax(0, 1fr); min-height: 42px; }
+        .nav-index { width: 27px; height: 27px; }
+        .nav-count { display: none; }
+        .topbar { position: static; min-height: 44px; }
+        .content { padding-top: 34px; }
+        h1 { font-size: 32px; }
+        .question { padding: 18px; }
+        .actions { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+      }
+
+      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+    </style>
+  </head>
+  <body>
+    <div class="loading" id="loading">Loading questionnaire...</div>
+    <div class="app" id="app" hidden>
+      <aside class="rail">
+        <h2 class="rail-title" id="railTitle"></h2>
+        <p class="rail-copy" id="railCopy"></p>
+        <div class="progress-copy"><span id="progressText"></span><span id="progressPercent"></span></div>
+        <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+        <nav class="nav" id="nav" aria-label="Questionnaire sections"></nav>
+      </aside>
+      <main class="workspace">
+        <div class="topbar"><span class="save-state" id="saveState">Loading...</span></div>
+        <div class="content">
+          <header class="intro">
+            <p class="eyebrow" id="eyebrow"></p>
+            <h1 id="title"></h1>
+            <p class="intro-copy" id="description"></p>
+          </header>
+          <div id="questionnaire"></div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const state = { config: null, answers: {}, status: 'draft', activeSection: 0, saveTimer: null, saveQueue: Promise.resolve(), completing: false };
+      const ui = {
+        'zh-CN': { loading: '正在载入问卷', draft: '本地草稿已载入', saving: '正在保存…', saved: '已自动保存', complete: '问卷已完成并保存', saveError: '保存失败，请保留页面并重试', required: '必答', optional: '选答', previous: '上一部分', next: '下一部分', finish: '完成问卷', remaining: (count) => `还有 ${count} 个问题未完成`, maxSelections: (count) => `此题最多选择 ${count} 项`, progress: (answered, total) => `必答项 ${answered}/${total}`, detail: '请具体说明…', completion: '完成后', defaultCompletion: 'Codex 会读取全部答案并生成约定的结果。' },
+        en: { loading: 'Loading questionnaire', draft: 'Local draft loaded', saving: 'Saving...', saved: 'Autosaved', complete: 'Questionnaire completed and saved', saveError: 'Save failed. Keep this page open and retry.', required: 'Required', optional: 'Optional', previous: 'Previous', next: 'Next', finish: 'Complete questionnaire', remaining: (count) => `${count} questions still need an answer`, maxSelections: (count) => `Select at most ${count}`, progress: (answered, total) => `Required ${answered}/${total}`, detail: 'Please describe...', completion: 'What happens next', defaultCompletion: 'Codex will read all answers and produce the agreed result.' },
+      };
+
+      const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+      const allQuestions = () => state.config.sections.flatMap((section) => section.questions);
+      const strings = () => ui[state.config.locale] ?? ui['zh-CN'];
+      const detailKey = (question, option) => `${question.id}__detail__${option.value}`;
+      const detailPrompt = (option) => option.detailPrompt ?? (/^(由你|其他|自定义|other|custom)/i.test(option.label) ? strings().detail : '');
+
+      function sanitizeAnswers(answers) {
+        const allowed = new Set();
+        allQuestions().forEach((question) => {
+          allowed.add(question.id);
+          question.options?.forEach((option) => {
+            if (detailPrompt(option)) allowed.add(detailKey(question, option));
+          });
+        });
+        return Object.fromEntries(Object.entries(answers).filter(([key]) => allowed.has(key)));
+      }
+
+      function hasValue(question) {
+        const value = state.answers[question.id];
+        if (Array.isArray(value)) return value.length > 0;
+        if (question.type === 'number') return value !== '' && value !== undefined && value !== null;
+        return typeof value === 'string' && value.trim().length > 0;
+      }
+
+      function isAnswered(question) {
+        if (!hasValue(question)) return false;
+        if (question.type === 'number') {
+          const value = Number(state.answers[question.id]);
+          if (!Number.isFinite(value)) return false;
+          if (question.min !== undefined && value < question.min) return false;
+          if (question.max !== undefined && value > question.max) return false;
+          if (question.step !== undefined) {
+            const steps = (value - (question.min ?? 0)) / question.step;
+            if (Math.abs(steps - Math.round(steps)) > 1e-9) return false;
+          }
+        }
+        if (!question.options) return true;
+        const selected = Array.isArray(state.answers[question.id]) ? state.answers[question.id] : [state.answers[question.id]];
+        if (question.type === 'checkbox' && question.max !== undefined && selected.length > question.max) return false;
+        if (new Set(selected).size !== selected.length) return false;
+        return selected.every((value) => {
+          const option = question.options.find((item) => item.value === value);
+          return Boolean(option) && (!detailPrompt(option) || Boolean(state.answers[detailKey(question, option)]?.trim()));
+        });
+      }
+
+      function optionMarkup(question, option) {
+        const selected = Array.isArray(state.answers[question.id]) ? state.answers[question.id].includes(option.value) : state.answers[question.id] === option.value;
+        const type = question.type === 'checkbox' ? 'checkbox' : 'radio';
+        const prompt = detailPrompt(option);
+        const detail = prompt ? `<label class="option-detail" data-detail-for="${escapeHtml(question.id)}" data-detail-option="${escapeHtml(option.value)}" ${selected ? '' : 'hidden'}><span>${escapeHtml(prompt)}</span><textarea name="${escapeHtml(detailKey(question, option))}" data-detail-question="${escapeHtml(question.id)}" data-detail-option-value="${escapeHtml(option.value)}" placeholder="${escapeHtml(strings().detail)}">${escapeHtml(state.answers[detailKey(question, option)] ?? '')}</textarea></label>` : '';
+        return `<label class="option"><input type="${type}" name="${escapeHtml(question.id)}" value="${escapeHtml(option.value)}" ${selected ? 'checked' : ''}><span><span class="option-title">${escapeHtml(option.label)}</span>${option.note ? `<span class="option-note">${escapeHtml(option.note)}</span>` : ''}</span></label>${detail}`;
+      }
+
+      function controlMarkup(question) {
+        if (question.options) return `<div class="options">${question.options.map((option) => optionMarkup(question, option)).join('')}</div>`;
+        if (question.type === 'textarea') return `<textarea name="${escapeHtml(question.id)}" placeholder="${escapeHtml(question.placeholder)}">${escapeHtml(state.answers[question.id] ?? '')}</textarea>`;
+        const attributes = question.type === 'number' ? `type="number" min="${escapeHtml(question.min ?? '')}" max="${escapeHtml(question.max ?? '')}" step="${escapeHtml(question.step ?? 'any')}"` : 'type="text"';
+        return `<input ${attributes} name="${escapeHtml(question.id)}" value="${escapeHtml(state.answers[question.id] ?? '')}" placeholder="${escapeHtml(question.placeholder)}">`;
+      }
+
+      function render() {
+        const config = state.config;
+        document.documentElement.lang = config.locale ?? 'zh-CN';
+        document.documentElement.style.setProperty('--accent', config.accent ?? '#315c55');
+        document.title = config.title;
+        document.querySelector('#railTitle').textContent = config.title;
+        document.querySelector('#railCopy').textContent = config.description ?? '';
+        document.querySelector('#eyebrow').textContent = config.eyebrow ?? 'Questionnaire';
+        document.querySelector('#title').textContent = config.title;
+        document.querySelector('#description').textContent = config.description ?? '';
+        document.querySelector('#nav').innerHTML = config.sections.map((section, index) => navMarkup(section, index)).join('');
+        document.querySelector('#questionnaire').innerHTML = config.sections.map((section, index) => sectionMarkup(section, index)).join('');
+        updateProgress();
+      }
+
+      function navMarkup(section, index) {
+        const tracked = section.questions.filter((question) => question.required);
+        const questions = tracked.length ? tracked : section.questions;
+        const answered = questions.filter(isAnswered).length;
+        const complete = answered === questions.length;
+        return `<button class="nav-button ${complete ? 'is-complete' : ''}" data-section-button="${index}" aria-current="${index === state.activeSection ? 'step' : 'false'}"><span class="nav-index">${complete ? '✓' : index + 1}</span><span>${escapeHtml(section.title)}</span><span class="nav-count">${answered}/${questions.length}</span></button>`;
+      }
+
+      function sectionMarkup(section, index) {
+        const final = index === state.config.sections.length - 1;
+        const questions = section.questions.map((question) => `<fieldset class="question" data-question="${escapeHtml(question.id)}"><legend>${escapeHtml(question.title)}<span class="requirement">${question.required ? strings().required : strings().optional}</span></legend>${question.help ? `<p class="question-help">${escapeHtml(question.help)}</p>` : ''}${controlMarkup(question)}</fieldset>`).join('');
+        const completion = final ? `<div class="completion"><strong>${escapeHtml(strings().completion)}</strong><p>${escapeHtml(state.config.completionText ?? strings().defaultCompletion)}</p></div>` : '';
+        return `<section class="section" data-section="${index}" ${index === state.activeSection ? '' : 'hidden'}><div class="section-heading"><span class="section-index">${index + 1}</span><div><h2>${escapeHtml(section.title)}</h2>${section.description ? `<p class="section-copy">${escapeHtml(section.description)}</p>` : ''}</div></div><div class="questions">${questions}</div>${completion}<div class="actions"><button class="button button-secondary" data-previous ${index === 0 ? 'disabled' : ''}>${escapeHtml(strings().previous)}</button><button class="button button-primary" ${final ? 'data-complete' : 'data-next'}>${escapeHtml(final ? strings().finish : strings().next)}</button></div></section>`;
+      }
+
+      function collect(input) {
+        const question = allQuestions().find((item) => item.id === (input.dataset.detailQuestion ?? input.name));
+        if (!question) return;
+        if (input.dataset.detailQuestion) state.answers[detailKey(question, question.options.find((option) => option.value === input.dataset.detailOptionValue))] = input.value;
+        else if (question.type === 'checkbox') {
+          const selected = [...document.querySelectorAll(`input[name="${CSS.escape(question.id)}"]:checked`)].map((item) => item.value);
+          if (question.max && selected.length > question.max) {
+            input.checked = false;
+            setSaveState(strings().maxSelections(question.max), 'error');
+            return;
+          }
+          state.answers[question.id] = selected;
+          question.options.forEach((option) => document.querySelectorAll(`[data-detail-for="${CSS.escape(question.id)}"][data-detail-option="${CSS.escape(option.value)}"]`).forEach((element) => { element.hidden = !selected.includes(option.value); }));
+        } else {
+          state.answers[question.id] = question.type === 'number' && input.value !== '' ? Number(input.value) : input.value;
+          if (question.options) question.options.forEach((option) => document.querySelectorAll(`[data-detail-for="${CSS.escape(question.id)}"][data-detail-option="${CSS.escape(option.value)}"]`).forEach((element) => { element.hidden = option.value !== input.value; }));
+        }
+        state.status = 'draft';
+        if (isAnswered(question)) input.closest('.question')?.classList.remove('is-missing');
+        renderNavigation();
+        scheduleSave();
+      }
+
+      function renderNavigation() {
+        document.querySelector('#nav').innerHTML = state.config.sections.map((section, index) => navMarkup(section, index)).join('');
+        updateProgress();
+      }
+
+      function updateProgress() {
+        const required = allQuestions().filter((question) => question.required);
+        const answered = required.filter(isAnswered).length;
+        const percent = required.length ? Math.round(answered / required.length * 100) : 100;
+        document.querySelector('#progressText').textContent = strings().progress(answered, required.length);
+        document.querySelector('#progressPercent').textContent = `${percent}%`;
+        document.querySelector('#progressBar').style.width = `${percent}%`;
+      }
+
+      function setSaveState(message, status) {
+        const element = document.querySelector('#saveState');
+        element.textContent = message;
+        element.dataset.state = status;
+      }
+
+      function scheduleSave() {
+        clearTimeout(state.saveTimer);
+        setSaveState(strings().saving, 'saving');
+        state.saveTimer = setTimeout(() => {
+          state.saveTimer = null;
+          void save('draft');
+        }, 450);
+      }
+
+      async function save(status = state.status) {
+        const payload = JSON.stringify({ status, answers: state.answers });
+        const operation = state.saveQueue.then(async () => {
+          for (let attempt = 0; attempt < 3; attempt += 1) {
+            try {
+              const response = await fetch('/api/answers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload });
+              if (!response.ok) {
+                const error = new Error('save failed');
+                error.retryable = response.status >= 500;
+                throw error;
+              }
+              const saved = await response.json();
+              state.status = saved.status;
+              setSaveState(saved.status === 'complete' ? strings().complete : strings().saved, 'saved');
+              return true;
+            } catch (error) {
+              if (attempt === 2 || error.retryable === false) {
+                setSaveState(strings().saveError, 'error');
+                return false;
+              }
+              await new Promise((resolve) => setTimeout(resolve, 400 * (attempt + 1)));
+            }
+          }
+          return false;
+        });
+        state.saveQueue = operation;
+        return operation;
+      }
+
+      function showSection(index) {
+        state.activeSection = Math.max(0, Math.min(index, state.config.sections.length - 1));
+        document.querySelectorAll('[data-section]').forEach((panel, panelIndex) => { panel.hidden = panelIndex !== state.activeSection; });
+        renderNavigation();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      async function complete() {
+        const incomplete = allQuestions().filter((question) => (question.required || hasValue(question)) && !isAnswered(question));
+        document.querySelectorAll('.is-missing').forEach((element) => element.classList.remove('is-missing'));
+        if (incomplete.length) {
+          const first = incomplete[0];
+          showSection(state.config.sections.findIndex((section) => section.questions.some((question) => question.id === first.id)));
+          requestAnimationFrame(() => {
+            incomplete.forEach((question) => document.querySelector(`[data-question="${CSS.escape(question.id)}"]`)?.classList.add('is-missing'));
+            document.querySelector(`[data-question="${CSS.escape(first.id)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          });
+          setSaveState(strings().remaining(incomplete.length), 'error');
+          return;
+        }
+        if (state.completing) return;
+        state.completing = true;
+        clearTimeout(state.saveTimer);
+        state.saveTimer = null;
+        try {
+          if (await save('complete')) window.scrollTo({ top: 0, behavior: 'smooth' });
+        } finally {
+          state.completing = false;
+        }
+      }
+
+      document.querySelector('#questionnaire').addEventListener('change', (event) => { if (event.target.matches('input')) collect(event.target); });
+      document.querySelector('#questionnaire').addEventListener('input', (event) => { if (event.target.matches('textarea, input[type="text"], input[type="number"]')) collect(event.target); });
+      document.querySelector('#questionnaire').addEventListener('click', (event) => {
+        if (event.target.closest('[data-next]')) showSection(state.activeSection + 1);
+        if (event.target.closest('[data-previous]')) showSection(state.activeSection - 1);
+        if (event.target.closest('[data-complete]')) complete();
+      });
+      document.querySelector('#nav').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-section-button]');
+        if (button) showSection(Number(button.dataset.sectionButton));
+      });
+
+      async function initialize() {
+        try {
+          const [configResponse, answersResponse] = await Promise.all([fetch('/api/config'), fetch('/api/answers')]);
+          state.config = await configResponse.json();
+          const saved = await answersResponse.json();
+          const answers = saved.answers && typeof saved.answers === 'object' && !Array.isArray(saved.answers) ? saved.answers : {};
+          state.answers = sanitizeAnswers(answers);
+          state.status = saved.status ?? 'draft';
+          setSaveState(state.status === 'complete' ? strings().complete : strings().draft, 'saved');
+          render();
+          document.querySelector('#loading').hidden = true;
+          document.querySelector('#app').hidden = false;
+        } catch (error) {
+          document.querySelector('#loading').textContent = `Unable to load questionnaire: ${error.message}`;
+        }
+      }
+
+      initialize();
+    </script>
+  </body>
+</html>

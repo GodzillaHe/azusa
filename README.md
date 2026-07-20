@@ -16,6 +16,16 @@ gotopia/
 
 ## Current tools
 
+### Local Questionnaire Skill
+
+Reusable local browser questionnaire source lives in [`skills/local-questionnaire`](skills/local-questionnaire). It uses a zero-dependency Node server, autosaves drafts, and validates completed answers before Codex consumes them.
+
+Validate a questionnaire config with:
+
+```bash
+node skills/local-questionnaire/scripts/questionnaire.mjs --config <questionnaire.json> --check
+```
+
 ### Image Generator
 
 `image-generator` is a standalone Next.js app for `gpt-image-2` image generation.
