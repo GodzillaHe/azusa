@@ -11,20 +11,14 @@ gotopia/
 ├── image-generator/  # Next.js GPT image generation app
 ├── tools/            # CLI tools and local scripts
 ├── mcp/              # MCP servers and tool definitions
-└── skills/           # Opencode skills and agent workflows
+└── skills/           # Reusable agent skills and workflows
 ```
 
 ## Current tools
 
 ### Local Questionnaire Skill
 
-Reusable local browser questionnaire source lives in [`skills/local-questionnaire`](skills/local-questionnaire). It uses a zero-dependency Node server, autosaves drafts, and validates completed answers before Codex consumes them.
-
-Validate a questionnaire config with:
-
-```bash
-node skills/local-questionnaire/scripts/questionnaire.mjs --config <questionnaire.json> --check
-```
+Reusable local browser questionnaire source lives in [`skills/local-questionnaire`](skills/local-questionnaire) and supports both Codex and OpenClaw. See the [`skills` index](skills/README.md) for installation, validation, and future Skill entries.
 
 ### Image Generator
 
