@@ -1,4 +1,4 @@
-# Gotopia
+# Momonogi
 
 Godzilla's workspace for learning and building AI agent programming tools.
 
@@ -7,7 +7,7 @@ Use this repo for small tools, agent utilities, MCP servers, and reusable skills
 ## Structure
 
 ```text
-gotopia/
+momonogi/
 ├── image-generator/  # Next.js GPT image generation app
 ├── tools/            # CLI tools and local scripts
 ├── mcp/              # MCP servers and tool definitions
