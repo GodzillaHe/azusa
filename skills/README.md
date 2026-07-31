@@ -1,5 +1,7 @@
 # Skills
 
+[中文说明](README.zh-CN.md)
+
 This directory contains reusable agent skills maintained in this repository. Codex and OpenClaw use separate installation directories, while the repository copy remains the source of truth.
 
 ## Index
