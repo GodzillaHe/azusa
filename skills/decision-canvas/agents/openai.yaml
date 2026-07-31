@@ -1,0 +1,4 @@
+interface:
+  display_name: "Decision Canvas"
+  short_description: "Gather related decisions in an interactive structured form"
+  default_prompt: "Use $decision-canvas to gather my decisions through an interactive questionnaire."

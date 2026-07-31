@@ -9,16 +9,24 @@ import { fileURLToPath } from 'node:url';
 
 const skillDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const pagePath = path.join(skillDir, 'assets', 'index.html');
+const inlinePagePath = path.join(skillDir, 'assets', 'inline.html');
 const args = parseArgs(process.argv.slice(2));
 
-if (!args.config) fail('Usage: questionnaire.mjs --config <questionnaire.json> [--answers <answers.json>] [--port 4178] [--check]');
+if (!args.config) fail('Usage: decision-canvas.mjs --config <questionnaire.json> [--answers <answers.json>] [--port 4178] [--check | --inline <output.html>]');
 
 const configPath = path.resolve(args.config);
 const config = JSON.parse(await readFile(configPath, 'utf8'));
 validateConfig(config);
 
+if (args.check && args.inline) fail('Use either --check or --inline, not both.');
+
 if (args.check) {
   console.log(`Valid questionnaire: ${config.title} (${countQuestions(config)} questions)`);
+  process.exit(0);
+}
+
+if (args.inline) {
+  await renderInline(args.inline);
   process.exit(0);
 }
 
@@ -40,10 +48,18 @@ let saveQueue = Promise.resolve();
 
 function parseArgs(values) {
   const parsed = {};
+  const valueFlags = new Set(['config', 'answers', 'port', 'inline']);
   for (let index = 0; index < values.length; index += 1) {
     const value = values[index];
     if (value === '--check') parsed.check = true;
-    else if (value.startsWith('--')) parsed[value.slice(2)] = values[++index];
+    else if (value.startsWith('--')) {
+      const key = value.slice(2);
+      const next = values[index + 1];
+      if (!valueFlags.has(key)) fail(`Unknown option: ${value}`);
+      if (next === undefined || next.startsWith('--')) fail(`Missing value for ${value}`);
+      parsed[key] = next;
+      index += 1;
+    }
     else fail(`Unexpected argument: ${value}`);
   }
   return parsed;
@@ -65,6 +81,14 @@ function countQuestions(document) {
   return document.sections.reduce((total, section) => total + section.questions.length, 0);
 }
 
+function isRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isNonEmptyString(value) {
+  return typeof value === 'string' && Boolean(value.trim());
+}
+
 function isSafeKey(value) {
   return typeof value === 'string'
     && /^[a-z0-9][a-z0-9._-]*$/i.test(value)
@@ -77,9 +101,10 @@ function validateFiniteNumber(value, label) {
 }
 
 function validateConfig(document) {
+  if (!isRecord(document)) fail('Questionnaire config must be a JSON object.');
   if (document.version !== 1) fail('Questionnaire version must be 1.');
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(document.slug ?? '')) fail('Questionnaire slug must use lowercase hyphen-case.');
-  if (!document.title?.trim()) fail('Questionnaire title is required.');
+  if (!isNonEmptyString(document.title)) fail('Questionnaire title is required.');
   if (document.locale !== undefined && !['zh-CN', 'en'].includes(document.locale)) fail('Questionnaire locale must be zh-CN or en.');
   if (document.accent !== undefined && !/^#[0-9a-f]{6}$/i.test(document.accent)) fail('Questionnaire accent must be a six-digit hex color.');
   if (!Array.isArray(document.sections) || document.sections.length === 0) fail('At least one section is required.');
@@ -87,14 +112,16 @@ function validateConfig(document) {
   const sectionIds = new Set();
   const questionIds = new Set();
   for (const section of document.sections) {
+    if (!isRecord(section)) fail('Every section must be an object.');
     if (!isSafeKey(section.id) || sectionIds.has(section.id)) fail(`Invalid or duplicate section id: ${section.id ?? ''}`);
     sectionIds.add(section.id);
-    if (!section.title?.trim() || !Array.isArray(section.questions) || section.questions.length === 0) fail(`Section ${section.id} needs a title and questions.`);
+    if (!isNonEmptyString(section.title) || !Array.isArray(section.questions) || section.questions.length === 0) fail(`Section ${section.id} needs a title and questions.`);
     for (const question of section.questions) {
+      if (!isRecord(question)) fail(`Section ${section.id} contains an invalid question.`);
       if (!isSafeKey(question.id) || questionIds.has(question.id)) fail(`Invalid or duplicate question id: ${question.id ?? ''}`);
       questionIds.add(question.id);
       if (!['radio', 'checkbox', 'text', 'textarea', 'number'].includes(question.type)) fail(`Unsupported question type: ${question.type}`);
-      if (!question.title?.trim() || typeof question.required !== 'boolean') fail(`Question ${question.id} needs a title and required boolean.`);
+      if (!isNonEmptyString(question.title) || typeof question.required !== 'boolean') fail(`Question ${question.id} needs a title and required boolean.`);
       if (!['radio', 'checkbox'].includes(question.type) && question.options !== undefined) fail(`Question ${question.id} cannot define options.`);
       if (!['number', 'checkbox'].includes(question.type) && question.max !== undefined) fail(`Question ${question.id} cannot define max.`);
       if (question.type !== 'number' && (question.min !== undefined || question.step !== undefined)) fail(`Question ${question.id} cannot define numeric bounds.`);
@@ -113,13 +140,27 @@ function validateConfig(document) {
         }
         const optionValues = new Set();
         for (const option of question.options) {
-          if (!isSafeKey(option.value) || !option.label?.trim() || optionValues.has(option.value)) fail(`Question ${question.id} has an invalid or duplicate option.`);
+          if (!isRecord(option) || !isSafeKey(option.value) || !isNonEmptyString(option.label) || optionValues.has(option.value)) fail(`Question ${question.id} has an invalid or duplicate option.`);
           optionValues.add(option.value);
           if (option.detailPrompt !== undefined && (typeof option.detailPrompt !== 'string' || !option.detailPrompt.trim())) fail(`Question ${question.id} has an invalid detail prompt.`);
         }
       }
     }
   }
+}
+
+async function renderInline(output) {
+  const marker = '__DECISION_CANVAS_CONFIG__';
+  const rootMarker = '__DECISION_CANVAS_ROOT_ID__';
+  const template = await readFile(inlinePagePath, 'utf8');
+  if (!template.includes(marker) || !template.includes(rootMarker)) fail('Inline template is missing required markers.');
+  const serialized = JSON.stringify(config).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+  const rootId = `decision-canvas-${config.slug}`;
+  const outputPath = path.resolve(output);
+  const fragment = template.replace(marker, serialized).replaceAll(rootMarker, rootId);
+  await mkdir(path.dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, fragment, 'utf8');
+  console.log(`Inline questionnaire: ${outputPath}`);
 }
 
 function optionNeedsDetail(option) {
@@ -178,9 +219,6 @@ function answerErrors(answers) {
             if (typeof answers[key] !== 'string' || !answers[key].trim()) errors.push(`${question.id}: detail is required for ${option.value}`);
           }
         }
-        for (const option of question.options) {
-          if (optionNeedsDetail(option)) allowedKeys.add(`${question.id}__detail__${option.value}`);
-        }
       }
     }
   }
@@ -191,6 +229,27 @@ function answerErrors(answers) {
   return errors;
 }
 
+function normalizeAnswers(answers) {
+  const normalized = {};
+  if (!isRecord(answers)) return normalized;
+  for (const section of config.sections) {
+    for (const question of section.questions) {
+      if (!hasOwn(answers, question.id)) continue;
+      normalized[question.id] = answers[question.id];
+      if (!question.options) continue;
+      const selected = question.type === 'checkbox' ? answers[question.id] : [answers[question.id]];
+      if (!Array.isArray(selected)) continue;
+      for (const selectedValue of selected) {
+        const option = question.options.find((item) => item.value === selectedValue);
+        if (!option || !optionNeedsDetail(option)) continue;
+        const key = `${question.id}__detail__${option.value}`;
+        if (hasOwn(answers, key)) normalized[key] = answers[key];
+      }
+    }
+  }
+  return normalized;
+}
+
 function send(response, status, body, contentType = 'application/json; charset=utf-8') {
   response.writeHead(status, { 'Cache-Control': 'no-store', 'Content-Type': contentType });
   response.end(body);
@@ -199,11 +258,38 @@ function send(response, status, body, contentType = 'application/json; charset=u
 async function readAnswers() {
   try {
     const saved = JSON.parse(await readFile(answersPath, 'utf8'));
-    return saved.questionnaire === config.slug ? saved : emptyDocument;
+    if (!isRecord(saved) || saved.questionnaire !== config.slug) return emptyDocument;
+    const answers = normalizeAnswers(saved.answers);
+    const validComplete = saved.status === 'complete' && answerErrors(answers).length === 0;
+    const reconciled = {
+      ...emptyDocument,
+      ...saved,
+      status: validComplete ? 'complete' : 'draft',
+      completedAt: validComplete ? saved.completedAt : null,
+      answers,
+    };
+    if (JSON.stringify(reconciled) !== JSON.stringify(saved)) await writeAnswerDocument(reconciled);
+    return reconciled;
   } catch (error) {
     if (error.code === 'ENOENT') return emptyDocument;
     throw error;
   }
+}
+
+async function writeAnswerDocument(document) {
+  const operation = saveQueue.then(async () => {
+    await mkdir(path.dirname(answersPath), { recursive: true });
+    const temporaryPath = `${answersPath}.${process.pid}.${randomUUID()}.tmp`;
+    try {
+      await writeFile(temporaryPath, `${JSON.stringify(document, null, 2)}\n`, 'utf8');
+      await rename(temporaryPath, answersPath);
+    } catch (error) {
+      await rm(temporaryPath, { force: true });
+      throw error;
+    }
+  });
+  saveQueue = operation.catch(() => {});
+  await operation;
 }
 
 async function saveAnswers(request, response) {
@@ -231,21 +317,9 @@ async function saveAnswers(request, response) {
     status: complete ? 'complete' : 'draft',
     updatedAt: now,
     completedAt: complete ? now : null,
-    answers: document.answers,
+    answers: normalizeAnswers(document.answers),
   };
-  const operation = saveQueue.then(async () => {
-    await mkdir(path.dirname(answersPath), { recursive: true });
-    const temporaryPath = `${answersPath}.${process.pid}.${randomUUID()}.tmp`;
-    try {
-      await writeFile(temporaryPath, `${JSON.stringify(saved, null, 2)}\n`, 'utf8');
-      await rename(temporaryPath, answersPath);
-    } catch (error) {
-      await rm(temporaryPath, { force: true });
-      throw error;
-    }
-  });
-  saveQueue = operation.catch(() => {});
-  await operation;
+  await writeAnswerDocument(saved);
   send(response, 200, JSON.stringify(saved));
 }
 

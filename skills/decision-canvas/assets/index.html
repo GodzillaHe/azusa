@@ -185,8 +185,8 @@
     <script>
       const state = { config: null, answers: {}, status: 'draft', activeSection: 0, saveTimer: null, saveQueue: Promise.resolve(), completing: false };
       const ui = {
-        'zh-CN': { loading: '正在载入问卷', draft: '本地草稿已载入', saving: '正在保存…', saved: '已自动保存', complete: '问卷已完成并保存', saveError: '保存失败，请保留页面并重试', required: '必答', optional: '选答', previous: '上一部分', next: '下一部分', finish: '完成问卷', remaining: (count) => `还有 ${count} 个问题未完成`, maxSelections: (count) => `此题最多选择 ${count} 项`, progress: (answered, total) => `必答项 ${answered}/${total}`, detail: '请具体说明…', completion: '完成后', defaultCompletion: 'Codex 会读取全部答案并生成约定的结果。' },
-        en: { loading: 'Loading questionnaire', draft: 'Local draft loaded', saving: 'Saving...', saved: 'Autosaved', complete: 'Questionnaire completed and saved', saveError: 'Save failed. Keep this page open and retry.', required: 'Required', optional: 'Optional', previous: 'Previous', next: 'Next', finish: 'Complete questionnaire', remaining: (count) => `${count} questions still need an answer`, maxSelections: (count) => `Select at most ${count}`, progress: (answered, total) => `Required ${answered}/${total}`, detail: 'Please describe...', completion: 'What happens next', defaultCompletion: 'Codex will read all answers and produce the agreed result.' },
+        'zh-CN': { loading: '正在载入问卷', draft: '本地草稿已载入', saving: '正在保存…', saved: '已自动保存', complete: '问卷已完成并保存', saveError: '保存失败，请保留页面并重试', required: '必答', optional: '选答', previous: '上一部分', next: '下一部分', finish: '完成问卷', remaining: (count) => `还有 ${count} 个问题未完成`, maxSelections: (count) => `此题最多选择 ${count} 项`, progress: (answered, total) => `必答项 ${answered}/${total}`, detail: '请具体说明…', completion: '完成后', defaultCompletion: 'Agent 会读取全部答案并生成约定的结果。' },
+        en: { loading: 'Loading questionnaire', draft: 'Local draft loaded', saving: 'Saving...', saved: 'Autosaved', complete: 'Questionnaire completed and saved', saveError: 'Save failed. Keep this page open and retry.', required: 'Required', optional: 'Optional', previous: 'Previous', next: 'Next', finish: 'Complete questionnaire', remaining: (count) => `${count} questions still need an answer`, maxSelections: (count) => `Select at most ${count}`, progress: (answered, total) => `Required ${answered}/${total}`, detail: 'Please describe...', completion: 'What happens next', defaultCompletion: 'The agent will read all answers and produce the agreed result.' },
       };
 
       const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
@@ -292,10 +292,16 @@
             return;
           }
           state.answers[question.id] = selected;
-          question.options.forEach((option) => document.querySelectorAll(`[data-detail-for="${CSS.escape(question.id)}"][data-detail-option="${CSS.escape(option.value)}"]`).forEach((element) => { element.hidden = !selected.includes(option.value); }));
+          question.options.forEach((option) => {
+            if (!selected.includes(option.value)) delete state.answers[detailKey(question, option)];
+            document.querySelectorAll(`[data-detail-for="${CSS.escape(question.id)}"][data-detail-option="${CSS.escape(option.value)}"]`).forEach((element) => { element.hidden = !selected.includes(option.value); });
+          });
         } else {
           state.answers[question.id] = question.type === 'number' && input.value !== '' ? Number(input.value) : input.value;
-          if (question.options) question.options.forEach((option) => document.querySelectorAll(`[data-detail-for="${CSS.escape(question.id)}"][data-detail-option="${CSS.escape(option.value)}"]`).forEach((element) => { element.hidden = option.value !== input.value; }));
+          if (question.options) question.options.forEach((option) => {
+            if (option.value !== input.value) delete state.answers[detailKey(question, option)];
+            document.querySelectorAll(`[data-detail-for="${CSS.escape(question.id)}"][data-detail-option="${CSS.escape(option.value)}"]`).forEach((element) => { element.hidden = option.value !== input.value; });
+          });
         }
         state.status = 'draft';
         if (isAnswered(question)) input.closest('.question')?.classList.remove('is-missing');

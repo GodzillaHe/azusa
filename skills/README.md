@@ -6,7 +6,7 @@ This directory contains reusable agent skills maintained in this repository. Cod
 
 | Skill | Purpose | Instructions |
 | --- | --- | --- |
-| [`local-questionnaire`](local-questionnaire/) | Collect several related decisions in an autosaving local browser form, validate the answers, and hand the complete result back to the agent. | [`SKILL.md`](local-questionnaire/SKILL.md) |
+| [`decision-canvas`](decision-canvas/) | Collect related decisions in a Codex inline form or an autosaving local browser form, validate the answers, and hand the complete result back to the agent. | [`SKILL.md`](decision-canvas/SKILL.md) |
 
 ## Layout
 
@@ -35,19 +35,19 @@ OpenClaw reads the same `SKILL.md`, scripts, references, and assets. It ignores 
 Run the following command from the repository root to install the Skill for every OpenClaw agent:
 
 ```bash
-openclaw skills install --global --force "$PWD/skills/local-questionnaire"
+openclaw skills install --global --force "$PWD/skills/decision-canvas"
 ```
 
 Install it for one agent when other agents should not see it:
 
 ```bash
-openclaw skills install --agent main --force "$PWD/skills/local-questionnaire"
+openclaw skills install --agent main --force "$PWD/skills/decision-canvas"
 ```
 
 Check the installed Skill:
 
 ```bash
-openclaw skills info local-questionnaire --json
+openclaw skills info decision-canvas --json
 openclaw skills check --json
 ```
 
@@ -57,9 +57,9 @@ The questionnaire runtime requires Node.js and a persistent process while the us
 
 ## Validate
 
-Validate the Local Questionnaire Skill's config and runtime script:
+Validate the Decision Canvas Skill's config and runtime script:
 
 ```bash
-node --check skills/local-questionnaire/scripts/questionnaire.mjs
-node skills/local-questionnaire/scripts/questionnaire.mjs --config <questionnaire.json> --check
+node --check skills/decision-canvas/scripts/decision-canvas.mjs
+node skills/decision-canvas/scripts/decision-canvas.mjs --config <questionnaire.json> --check
 ```

@@ -16,9 +16,9 @@ azusa/
 
 ## Current tools
 
-### Local Questionnaire Skill
+### Decision Canvas Skill
 
-Reusable local browser questionnaire source lives in [`skills/local-questionnaire`](skills/local-questionnaire) and supports both Codex and OpenClaw. See the [`skills` index](skills/README.md) for installation, validation, and future Skill entries.
+Reusable interactive questionnaire source lives in [`skills/decision-canvas`](skills/decision-canvas). It supports inline forms in Codex and autosaving local browser forms in Codex CLI and OpenClaw. See the [`skills` index](skills/README.md) for installation and validation.
 
 ### Image Generator
 

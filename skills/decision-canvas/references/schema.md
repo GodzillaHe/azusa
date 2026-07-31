@@ -1,4 +1,4 @@
-# Questionnaire Schema
+# Decision Canvas Schema
 
 Create one JSON document:
 
@@ -10,7 +10,7 @@ Create one JSON document:
   "title": "API 设计决策问卷",
   "eyebrow": "Architecture",
   "description": "完成后将生成 API 设计配置。",
-  "completionText": "答案会由 Codex 读取并用于生成配置。",
+  "completionText": "答案会由 Agent 读取并用于生成配置。",
   "accent": "#8F3F52",
   "sections": [
     {
@@ -61,7 +61,7 @@ Create one JSON document:
 - `eyebrow`: Optional short context label.
 - `description`: Why the questionnaire exists and what follows.
 - `completionText`: Optional text shown before completion.
-- `accent`: Optional accessible CSS color. Defaults to `#315c55`.
+- `accent`: Optional accessible CSS color for local-browser mode. Defaults to `#315c55`; Codex inline mode follows the host theme.
 - `sections`: One or more sections with unique IDs.
 
 ## Question Types
