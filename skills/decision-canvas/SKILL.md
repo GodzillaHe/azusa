@@ -1,6 +1,6 @@
 ---
 name: decision-canvas
-description: Gather several related user decisions through a structured interactive questionnaire, then return validated answers for a config, specification, plan, or other artifact. Use when a task needs a structured interview, multiple dependent choices, asynchronous form filling, an in-conversation Codex form, a local questionnaire link, or when asking questions one turn at a time would be inefficient. Prefer Codex inline mode when supported and the local autosaving browser mode when persistence or cross-agent compatibility is required.
+description: Create and run a structured interactive questionnaire that collects and validates related user decisions for a downstream artifact such as a config, specification, or plan. Use when the user explicitly asks for a decision canvas, questionnaire, or structured interview; when several unresolved choices materially affect the result and should be answered and reviewed together; or when answers need draft persistence or asynchronous completion. Do not use for a single clarification, a few independent low-impact preferences, information discoverable from existing context, or requests where the user wants the agent to decide.
 ---
 
 # Decision Canvas
