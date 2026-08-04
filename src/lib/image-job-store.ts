@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import type { ImageRequest } from "./image-options";
+import type { OpenAICredentials } from "./openai-credentials";
 
 export type ImageJobStatus = "running" | "succeeded" | "failed";
 
@@ -16,6 +17,7 @@ export type ImageJob = {
 
 const imageJobs = new Map<string, ImageJob>();
 const imageJobEditImages = new Map<string, File>();
+const imageJobCredentials = new Map<string, OpenAICredentials>();
 const GENERIC_IMAGE_ERROR = "图片生成失败，请稍后重试。";
 
 function requireImageJob(id: string): ImageJob {
@@ -48,7 +50,11 @@ function toDataImageUrls(images: unknown[]): string[] {
     .map((image) => `data:image/png;base64,${image.b64_json}`);
 }
 
-export function createImageJob(request: ImageRequest, editImage?: File): ImageJob {
+export function createImageJob(
+  request: ImageRequest,
+  credentials: OpenAICredentials,
+  editImage?: File,
+): ImageJob {
   const now = new Date().toISOString();
   const job: ImageJob = {
     id: crypto.randomUUID(),
@@ -60,6 +66,7 @@ export function createImageJob(request: ImageRequest, editImage?: File): ImageJo
   };
 
   imageJobs.set(job.id, job);
+  imageJobCredentials.set(job.id, credentials);
 
   if (editImage) {
     imageJobEditImages.set(job.id, editImage);
@@ -89,6 +96,7 @@ export function markImageJobSucceeded(id: string, images: string[]): ImageJob {
 
   imageJobs.set(id, updated);
   imageJobEditImages.delete(id);
+  imageJobCredentials.delete(id);
 
   return updated;
 }
@@ -109,6 +117,7 @@ export function markImageJobFailed(id: string, error: string): ImageJob {
 
   imageJobs.set(id, updated);
   imageJobEditImages.delete(id);
+  imageJobCredentials.delete(id);
 
   return updated;
 }
@@ -120,6 +129,7 @@ export function __resetImageJobStoreForTests(): void {
 
   imageJobs.clear();
   imageJobEditImages.clear();
+  imageJobCredentials.clear();
 }
 
 export function __hasImageJobEditImageForTests(id: string): boolean {
@@ -128,6 +138,14 @@ export function __hasImageJobEditImageForTests(id: string): boolean {
   }
 
   return imageJobEditImages.has(id);
+}
+
+export function __hasImageJobCredentialsForTests(id: string): boolean {
+  if (process.env.NODE_ENV !== "test") {
+    throw new Error("__hasImageJobCredentialsForTests is only available in tests.");
+  }
+
+  return imageJobCredentials.has(id);
 }
 
 export function __deleteImageJobEditImageForTests(id: string): void {
@@ -140,13 +158,15 @@ export function __deleteImageJobEditImageForTests(id: string): void {
 
 export async function runImageJob(id: string): Promise<ImageJob> {
   const job = requireImageJob(id);
-  const clientOptions: ConstructorParameters<typeof OpenAI>[0] = {
-    apiKey: process.env.OPENAI_API_KEY,
-  };
+  const credentials = imageJobCredentials.get(id);
 
-  if (process.env.OPENAI_BASE_URL) {
-    clientOptions.baseURL = process.env.OPENAI_BASE_URL;
+  if (!credentials) {
+    console.error("Image job is missing its OpenAI credentials", id);
+
+    return markImageJobFailed(id, GENERIC_IMAGE_ERROR);
   }
+
+  const clientOptions: ConstructorParameters<typeof OpenAI>[0] = credentials;
 
   try {
     const imageParameters = {
