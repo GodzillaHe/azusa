@@ -19,6 +19,7 @@ vi.mock("openai", () => ({
 import OpenAI from "openai";
 import {
   __deleteImageJobEditImageForTests,
+  __hasImageJobCredentialsForTests,
   __hasImageJobEditImageForTests,
   __resetImageJobStoreForTests,
   createImageJob,
@@ -36,16 +37,19 @@ const request: ImageRequest = {
   style: "vivid",
 };
 
+const credentials = {
+  apiKey: "test-key",
+  baseURL: "https://example.test/v1",
+};
+
 describe("image-job-store", () => {
   beforeEach(() => {
     __resetImageJobStoreForTests();
     vi.clearAllMocks();
-    delete process.env.OPENAI_API_KEY;
-    delete process.env.OPENAI_BASE_URL;
   });
 
   it("creates and stores a running job", () => {
-    const job = createImageJob(request);
+    const job = createImageJob(request, credentials);
 
     expect(job).toMatchObject({
       status: "running",
@@ -53,13 +57,15 @@ describe("image-job-store", () => {
       request,
     });
     expect(job.id).toEqual(expect.any(String));
+    expect(JSON.stringify(job)).not.toContain("test-key");
+    expect(__hasImageJobCredentialsForTests(job.id)).toBe(true);
     expect(getImageJob(job.id)).toEqual(job);
   });
 
   it("creates an edit job and stores its file outside API JSON", () => {
     const editImage = new File(["image-bytes"], "source.png", { type: "image/png" });
 
-    const job = createImageJob(request, editImage);
+    const job = createImageJob(request, credentials, editImage);
 
     expect(job).toMatchObject({
       status: "running",
@@ -73,7 +79,11 @@ describe("image-job-store", () => {
   });
 
   it("stores success images", () => {
-    const job = createImageJob(request, new File(["image-bytes"], "source.png", { type: "image/png" }));
+    const job = createImageJob(
+      request,
+      credentials,
+      new File(["image-bytes"], "source.png", { type: "image/png" }),
+    );
     const images = ["data:image/png;base64,one", "data:image/png;base64,two"];
 
     const updated = markImageJobSucceeded(job.id, images);
@@ -85,10 +95,15 @@ describe("image-job-store", () => {
     });
     expect(getImageJob(job.id)).toEqual(updated);
     expect(__hasImageJobEditImageForTests(job.id)).toBe(false);
+    expect(__hasImageJobCredentialsForTests(job.id)).toBe(false);
   });
 
   it("stores a failure message", () => {
-    const job = createImageJob(request, new File(["image-bytes"], "source.png", { type: "image/png" }));
+    const job = createImageJob(
+      request,
+      credentials,
+      new File(["image-bytes"], "source.png", { type: "image/png" }),
+    );
 
     const updated = markImageJobFailed(job.id, "图片生成失败，请稍后重试。");
 
@@ -99,10 +114,11 @@ describe("image-job-store", () => {
     });
     expect(getImageJob(job.id)).toEqual(updated);
     expect(__hasImageJobEditImageForTests(job.id)).toBe(false);
+    expect(__hasImageJobCredentialsForTests(job.id)).toBe(false);
   });
 
   it("does not overwrite a succeeded job with a later failure", () => {
-    const job = createImageJob(request);
+    const job = createImageJob(request, credentials);
     const succeeded = markImageJobSucceeded(job.id, ["data:image/png;base64,one"]);
 
     const updated = markImageJobFailed(job.id, "图片生成失败，请稍后重试。");
@@ -112,7 +128,7 @@ describe("image-job-store", () => {
   });
 
   it("does not overwrite a failed job with a later success", () => {
-    const job = createImageJob(request);
+    const job = createImageJob(request, credentials);
     const failed = markImageJobFailed(job.id, "图片生成失败，请稍后重试。");
 
     const updated = markImageJobSucceeded(job.id, ["data:image/png;base64,one"]);
@@ -121,13 +137,19 @@ describe("image-job-store", () => {
     expect(getImageJob(job.id)).toEqual(failed);
   });
 
+  it("clears job credentials when the test store resets", () => {
+    const job = createImageJob(request, credentials);
+
+    __resetImageJobStoreForTests();
+
+    expect(__hasImageJobCredentialsForTests(job.id)).toBe(false);
+  });
+
   it("runs a generate job through OpenAI and stores base64 data URLs", async () => {
-    process.env.OPENAI_API_KEY = "test-key";
-    process.env.OPENAI_BASE_URL = "https://example.test/v1";
     generateMock.mockResolvedValueOnce({
       data: [{ b64_json: "abc" }, { b64_json: "def" }],
     });
-    const job = createImageJob(request);
+    const job = createImageJob(request, credentials);
 
     const updated = await runImageJob(job.id);
 
@@ -150,15 +172,15 @@ describe("image-job-store", () => {
       status: "succeeded",
       images: ["data:image/png;base64,abc", "data:image/png;base64,def"],
     });
+    expect(__hasImageJobCredentialsForTests(job.id)).toBe(false);
   });
 
   it("runs an edit job through OpenAI with the edit image", async () => {
-    process.env.OPENAI_API_KEY = "test-key";
     const editImage = new File(["image-bytes"], "source.png", { type: "image/png" });
     editMock.mockResolvedValueOnce({
       data: [{ b64_json: "edited" }],
     });
-    const job = createImageJob(request, editImage);
+    const job = createImageJob(request, credentials, editImage);
 
     const updated = await runImageJob(job.id);
 
@@ -179,12 +201,13 @@ describe("image-job-store", () => {
       images: ["data:image/png;base64,edited"],
     });
     expect(__hasImageJobEditImageForTests(job.id)).toBe(false);
+    expect(__hasImageJobCredentialsForTests(job.id)).toBe(false);
   });
 
   it("fails an edit job without calling OpenAI when the edit image is missing", async () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
     const editImage = new File(["image-bytes"], "source.png", { type: "image/png" });
-    const job = createImageJob(request, editImage);
+    const job = createImageJob(request, credentials, editImage);
     __deleteImageJobEditImageForTests(job.id);
 
     const updated = await runImageJob(job.id);
@@ -197,6 +220,7 @@ describe("image-job-store", () => {
       error: "图片生成失败，请稍后重试。",
     });
     expect(__hasImageJobEditImageForTests(job.id)).toBe(false);
+    expect(__hasImageJobCredentialsForTests(job.id)).toBe(false);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       "Image edit job is missing its uploaded image",
       job.id,
@@ -205,10 +229,9 @@ describe("image-job-store", () => {
   });
 
   it("marks a running job failed when OpenAI rejects", async () => {
-    process.env.OPENAI_API_KEY = "test-key";
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
     generateMock.mockRejectedValueOnce(new Error("quota exceeded"));
-    const job = createImageJob(request);
+    const job = createImageJob(request, credentials);
 
     const updated = await runImageJob(job.id);
 
@@ -217,16 +240,16 @@ describe("image-job-store", () => {
       error: "图片生成失败，请稍后重试。",
     });
     expect(__hasImageJobEditImageForTests(job.id)).toBe(false);
+    expect(__hasImageJobCredentialsForTests(job.id)).toBe(false);
     expect(consoleErrorSpy).toHaveBeenCalledWith("Image generation failed", expect.any(Error));
     consoleErrorSpy.mockRestore();
   });
 
   it("filters invalid response items and only stores real base64 data URLs", async () => {
-    process.env.OPENAI_API_KEY = "test-key";
     generateMock.mockResolvedValueOnce({
       data: [{ b64_json: "abc" }, {}, { b64_json: undefined }, { b64_json: "def" }],
     });
-    const job = createImageJob(request);
+    const job = createImageJob(request, credentials);
 
     const updated = await runImageJob(job.id);
 
@@ -238,12 +261,11 @@ describe("image-job-store", () => {
   });
 
   it("marks failed with a generic message when OpenAI returns no images", async () => {
-    process.env.OPENAI_API_KEY = "test-key";
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
     generateMock.mockResolvedValueOnce({
       data: [{}, { b64_json: undefined }],
     });
-    const job = createImageJob(request);
+    const job = createImageJob(request, credentials);
 
     const updated = await runImageJob(job.id);
 
