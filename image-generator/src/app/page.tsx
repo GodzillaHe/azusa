@@ -42,6 +42,7 @@ import {
   type HistoryRecord,
 } from "@/lib/history-store";
 import { imageCountLabel, optionLabel, previewReadyStatus, UI_COPY } from "@/lib/ui-copy";
+import { loadSessionCredentials, saveSessionCredentials } from "@/lib/session-credentials";
 
 type GeneratedImage = {
   dataUrl: string;
@@ -111,6 +112,8 @@ function loadImageDimensions(source: string): Promise<ImageDimensions> {
 }
 
 export default function Home() {
+  const [apiKey, setApiKey] = useState("");
+  const [baseURL, setBaseURL] = useState("");
   const [prompt, setPrompt] = useState("");
   const [size, setSize] = useState<ImageSize>(IMAGE_SIZES[0]);
   const [count, setCount] = useState<ImageCount>(IMAGE_COUNTS[0]);
@@ -286,6 +289,12 @@ export default function Home() {
   );
 
   useEffect(() => {
+    const credentials = loadSessionCredentials(sessionStorage);
+    setApiKey(credentials.apiKey);
+    setBaseURL(credentials.baseURL);
+  }, []);
+
+  useEffect(() => {
     listHistoryRecords()
       .then((records) => {
         setHistoryRecords(records);
@@ -391,6 +400,11 @@ export default function Home() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (!apiKey.trim()) {
+      setError(UI_COPY.apiKeyRequired);
+      return;
+    }
+
     if (trimmedPrompt.length < PROMPT_MIN_LENGTH) {
       setError(UI_COPY.promptRequired);
       return;
@@ -431,9 +445,15 @@ export default function Home() {
             style,
           });
 
+      const credentialHeaders = {
+        "X-OpenAI-API-Key": apiKey.trim(),
+        ...(baseURL.trim() ? { "X-OpenAI-Base-URL": baseURL.trim() } : {}),
+      };
       const response = await fetch("/api/jobs", {
         method: "POST",
-        headers: referenceImage ? undefined : { "Content-Type": "application/json" },
+        headers: referenceImage
+          ? credentialHeaders
+          : { ...credentialHeaders, "Content-Type": "application/json" },
         body,
       });
 
@@ -748,6 +768,48 @@ export default function Home() {
         </div>
 
         <form className="generator-form" onSubmit={handleSubmit}>
+          <label className="field" htmlFor="api-key">
+            <span>{UI_COPY.apiKeyLabel}</span>
+            <input
+              id="api-key"
+              type="password"
+              value={apiKey}
+              onChange={(event) => {
+                const nextApiKey = event.target.value;
+                setApiKey(nextApiKey);
+                saveSessionCredentials(sessionStorage, { apiKey: nextApiKey, baseURL });
+              }}
+              placeholder={UI_COPY.apiKeyPlaceholder}
+              autoComplete="off"
+              spellCheck={false}
+              aria-describedby="api-key-help"
+            />
+          </label>
+          <p id="api-key-help" className="field-hint">
+            {UI_COPY.apiKeyHint}
+          </p>
+
+          <label className="field" htmlFor="api-base-url">
+            <span>{UI_COPY.apiBaseURLLabel}</span>
+            <input
+              id="api-base-url"
+              type="url"
+              value={baseURL}
+              onChange={(event) => {
+                const nextBaseURL = event.target.value;
+                setBaseURL(nextBaseURL);
+                saveSessionCredentials(sessionStorage, { apiKey, baseURL: nextBaseURL });
+              }}
+              placeholder={UI_COPY.apiBaseURLPlaceholder}
+              autoComplete="url"
+              spellCheck={false}
+              aria-describedby="api-base-url-help"
+            />
+          </label>
+          <p id="api-base-url-help" className="field-hint">
+            {UI_COPY.apiBaseURLHint}
+          </p>
+
           <div className="reference-field">
             <div className="reference-label-row">
               <span>{UI_COPY.referenceImageLabel}</span>
@@ -872,7 +934,7 @@ export default function Home() {
           {error ? <div className="error-banner" role="alert">{error}</div> : null}
           {notice && !error ? <p className="field-hint">{notice}</p> : null}
 
-          <button className="generate-button" type="submit" disabled={isLoading}>
+          <button className="generate-button" type="submit" disabled={isLoading || !apiKey.trim()}>
             {isLoading ? UI_COPY.generateLoading : UI_COPY.generateIdle}
           </button>
         </form>
