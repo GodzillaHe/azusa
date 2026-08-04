@@ -7,6 +7,10 @@ describe("UI_COPY", () => {
     expect(UI_COPY.brand).toBe("图片工具");
     expect(UI_COPY.heroTitle).toBe("图片生成");
     expect(UI_COPY.promptLabel).toBe("提示词");
+    expect(UI_COPY.apiKeyLabel).toBe("API Key");
+    expect(UI_COPY.apiKeyHint).toBe("仅保存在当前浏览器标签页，关闭后自动清除。");
+    expect(UI_COPY.apiBaseURLLabel).toBe("API 地址（可选）");
+    expect(UI_COPY.apiBaseURLPlaceholder).toBe("https://api.openai.com/v1");
     expect(UI_COPY.referenceImageLabel).toBe("参考图");
     expect(UI_COPY.referenceImageHint).toBe("点击上传、拖拽或粘贴图片");
     expect(UI_COPY.referenceImageClear).toBe("清除图片");

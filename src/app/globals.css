@@ -139,6 +139,8 @@ button {
 
 textarea,
 select,
+input[type="password"],
+input[type="url"],
 input[type="number"] {
   width: 100%;
   border: 1px solid var(--line-strong);
@@ -151,6 +153,8 @@ input[type="number"] {
 
 textarea:focus,
 select:focus,
+input[type="password"]:focus,
+input[type="url"]:focus,
 input[type="number"]:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
@@ -170,6 +174,8 @@ select {
   font-size: 0.9rem;
 }
 
+input[type="password"],
+input[type="url"],
 input[type="number"] {
   min-height: 42px;
   padding: 0 10px;
