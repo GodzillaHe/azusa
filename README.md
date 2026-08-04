@@ -6,17 +6,14 @@ A standalone Next.js app for generating images with `gpt-image-2`.
 
 ```bash
 npm install
-cp .env.example .env.local
 ```
 
-Edit `.env.local`:
+The app uses BYOK credentials. Enter an OpenAI API key in the page before
+starting an image job. You can also enter an OpenAI-compatible HTTPS base URL.
 
-```bash
-OPENAI_API_KEY=your_api_key_here
-OPENAI_BASE_URL=your_optional_base_url
-```
-
-If you use the default OpenAI endpoint, leave `OPENAI_BASE_URL` empty.
+The browser stores both values in `sessionStorage`. They remain available after
+a refresh in the same tab and are cleared when the tab closes. The server keeps
+the credentials in memory only while the image job runs.
 
 ## Run
 
