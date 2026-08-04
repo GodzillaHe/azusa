@@ -8,6 +8,7 @@ build/
 coverage/
 .turbo/
 .cache/
+.worktrees/
 *.tsbuildinfo
 
 # environment files
