@@ -27,11 +27,13 @@ Reusable interactive questionnaire source lives in [`skills/decision-canvas`](sk
 ```bash
 cd image-generator
 npm install
-cp .env.example .env.local
 npm run dev
 ```
 
 Then open http://localhost:3000.
+
+Enter your OpenAI API key and optional compatible API URL in the page. The
+browser keeps these values in the current tab only.
 
 Run checks:
 
