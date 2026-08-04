@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
+import { parseOpenAICredentials } from "@/lib/openai-credentials";
 import { validateImageRequest } from "@/lib/validate-image-request";
 
 export const runtime = "nodejs";
@@ -19,19 +20,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "OPENAI_API_KEY is not configured on the server." },
-      { status: 500 },
-    );
+  const credentials = parseOpenAICredentials(request.headers);
+  if (!credentials.ok) {
+    return NextResponse.json({ error: credentials.error }, { status: 400 });
   }
 
   const { prompt, size, count, quality } = validation.data;
-  const openai = new OpenAI({
-    apiKey,
-    baseURL: process.env.OPENAI_BASE_URL || undefined,
-  });
+  const openai = new OpenAI(credentials.data);
 
   try {
     const response = await openai.images.generate({

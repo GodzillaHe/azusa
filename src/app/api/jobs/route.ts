@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createImageJob, runImageJob } from "@/lib/image-job-store";
+import { parseOpenAICredentials } from "@/lib/openai-credentials";
 import { validateImageRequest } from "@/lib/validate-image-request";
 
 export const runtime = "nodejs";
@@ -82,14 +83,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  if (!process.env.OPENAI_API_KEY) {
-    return NextResponse.json(
-      { error: "服务器尚未配置 OPENAI_API_KEY，暂时无法生成图片。请联系管理员。" },
-      { status: 500 },
-    );
+  const credentials = parseOpenAICredentials(request.headers);
+  if (!credentials.ok) {
+    return NextResponse.json({ error: credentials.error }, { status: 400 });
   }
 
-  const job = createImageJob(validation.data, imageFile);
+  const job = createImageJob(validation.data, credentials.data, imageFile);
 
   void runImageJob(job.id).catch((error) => {
     console.error("Unexpected image job error", error);
