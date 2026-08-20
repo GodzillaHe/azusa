@@ -13,8 +13,8 @@
 ### Task 1: Parse And Validate BYOK Credentials
 
 **Files:**
-- Create: `image-generator/src/lib/openai-credentials.ts`
-- Create: `image-generator/src/lib/openai-credentials.test.ts`
+- Create: `projects/image-generator/src/lib/openai-credentials.ts`
+- Create: `projects/image-generator/src/lib/openai-credentials.test.ts`
 
 - [ ] **Step 1: Write failing parser tests**
 
@@ -54,15 +54,15 @@ Expected: all credential parser tests PASS.
 - [ ] **Step 5: Commit the parser**
 
 ```bash
-git add image-generator/src/lib/openai-credentials.ts image-generator/src/lib/openai-credentials.test.ts
+git add projects/image-generator/src/lib/openai-credentials.ts projects/image-generator/src/lib/openai-credentials.test.ts
 git commit -m "feat: validate BYOK OpenAI credentials"
 ```
 
 ### Task 2: Bind Credentials To Image Job Lifetime
 
 **Files:**
-- Modify: `image-generator/src/lib/image-job-store.ts`
-- Modify: `image-generator/src/lib/image-job-store.test.ts`
+- Modify: `projects/image-generator/src/lib/image-job-store.ts`
+- Modify: `projects/image-generator/src/lib/image-job-store.test.ts`
 
 - [ ] **Step 1: Write failing job credential tests**
 
@@ -95,19 +95,19 @@ Expected: all image job store tests PASS.
 - [ ] **Step 5: Commit job credential handling**
 
 ```bash
-git add image-generator/src/lib/image-job-store.ts image-generator/src/lib/image-job-store.test.ts
+git add projects/image-generator/src/lib/image-job-store.ts projects/image-generator/src/lib/image-job-store.test.ts
 git commit -m "feat: scope BYOK credentials to image jobs"
 ```
 
 ### Task 3: Add Session Storage And Credential Controls
 
 **Files:**
-- Create: `image-generator/src/lib/session-credentials.ts`
-- Create: `image-generator/src/lib/session-credentials.test.ts`
-- Modify: `image-generator/src/lib/ui-copy.ts`
-- Modify: `image-generator/src/lib/ui-copy.test.ts`
-- Modify: `image-generator/src/app/page.tsx`
-- Modify: `image-generator/src/app/globals.css`
+- Create: `projects/image-generator/src/lib/session-credentials.ts`
+- Create: `projects/image-generator/src/lib/session-credentials.test.ts`
+- Modify: `projects/image-generator/src/lib/ui-copy.ts`
+- Modify: `projects/image-generator/src/lib/ui-copy.test.ts`
+- Modify: `projects/image-generator/src/app/page.tsx`
+- Modify: `projects/image-generator/src/app/globals.css`
 
 - [ ] **Step 1: Write failing session storage tests**
 
@@ -153,15 +153,15 @@ Expected: both test files PASS.
 - [ ] **Step 6: Commit the browser BYOK controls**
 
 ```bash
-git add image-generator/src/lib/session-credentials.ts image-generator/src/lib/session-credentials.test.ts image-generator/src/lib/ui-copy.ts image-generator/src/lib/ui-copy.test.ts image-generator/src/app/page.tsx image-generator/src/app/globals.css
+git add projects/image-generator/src/lib/session-credentials.ts projects/image-generator/src/lib/session-credentials.test.ts projects/image-generator/src/lib/ui-copy.ts projects/image-generator/src/lib/ui-copy.test.ts projects/image-generator/src/app/page.tsx projects/image-generator/src/app/globals.css
 git commit -m "feat: add session-scoped BYOK controls"
 ```
 
 ### Task 4: Apply Credential Parsing To API Routes
 
 **Files:**
-- Modify: `image-generator/src/app/api/jobs/route.ts`
-- Modify: `image-generator/src/app/api/generate-image/route.ts`
+- Modify: `projects/image-generator/src/app/api/jobs/route.ts`
+- Modify: `projects/image-generator/src/app/api/generate-image/route.ts`
 
 - [ ] **Step 1: Add parser calls to both routes**
 
@@ -189,14 +189,14 @@ Expected: Next.js completes successfully and lists `/api/jobs`, `/api/jobs/[jobI
 - [ ] **Step 4: Commit route integration**
 
 ```bash
-git add image-generator/src/app/api/jobs/route.ts image-generator/src/app/api/generate-image/route.ts
+git add projects/image-generator/src/app/api/jobs/route.ts projects/image-generator/src/app/api/generate-image/route.ts
 git commit -m "feat: use BYOK credentials in image APIs"
 ```
 
 ### Task 5: Deploy And Verify
 
 **Files:**
-- Modify if needed: `image-generator/README.md`
+- Modify if needed: `projects/image-generator/README.md`
 
 - [ ] **Step 1: Document BYOK operation**
 
@@ -211,13 +211,13 @@ Expected: tests and build PASS. Run `git diff --check` and expect no output.
 - [ ] **Step 3: Commit documentation**
 
 ```bash
-git add image-generator/README.md
+git add projects/image-generator/README.md
 git commit -m "docs: explain BYOK image generation"
 ```
 
 - [ ] **Step 4: Push the implementation**
 
-Push the current `main` branch to `origin`. The existing backend source points at the GitHub `main/image-generator` path, so check that deployment first. If that source form fails, create and push a deployment branch whose root is the `image-generator` subtree, then create a replacement backend from that branch.
+Push the current `main` branch to `origin`. The existing backend source points at the GitHub `main/projects/image-generator` path, so check that deployment first. If that source form fails, create and push a deployment branch whose root is the `projects/image-generator` subtree, then create a replacement backend from that branch.
 
 - [ ] **Step 5: Verify the deployed service**
 

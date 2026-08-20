@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#17181b" />
+    <meta
+      name="description"
+      content="找回童年：纯前端 MD、FC、GBA 怀旧游戏模拟器"
+    />
+    <title>找回童年</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./tokens.css?v=arcade-workbench-2" />
+    <link rel="stylesheet" href="./styles.css?v=arcade-workbench-2" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar nav-slab">
+        <a class="brand" href="./" aria-label="找回童年首页">
+          <span class="brand-mark" aria-hidden="true">童</span>
+          <span>
+            <strong>找回童年</strong>
+            <small>RETRO GAME PLAYER</small>
+          </span>
+        </a>
+        <div class="cabinet-index" aria-hidden="true">
+          <span>FC</span><span>MD</span><span>GBA</span>
+        </div>
+        <div class="privacy-note">
+          <span class="privacy-dot" aria-hidden="true"></span>
+          本地 ROM 不上传
+        </div>
+      </header>
+
+      <div class="arcade-marquee" aria-hidden="true">
+        <span class="score-readout">1UP&nbsp;&nbsp;000000</span>
+        <span class="insert-coin">INSERT COIN</span>
+        <span class="slot-reels">
+          <span>7</span><span>BAR</span><span>7</span>
+        </span>
+      </div>
+
+      <section class="player-section" aria-labelledby="player-title">
+        <div class="player-heading">
+          <div>
+            <p class="system-label" id="system-label">FAMILY COMPUTER / NES</p>
+            <h1 id="player-title">插卡，开机。</h1>
+          </div>
+          <div class="game-meta" id="game-meta" hidden>
+            <span class="status-light" aria-hidden="true"></span>
+            <span id="game-name">GAME LOADED</span>
+          </div>
+        </div>
+
+        <div class="console-frame" id="console-frame">
+          <div class="screen-bezel">
+            <div class="screen is-idle" id="screen">
+              <div class="idle-screen" id="idle-screen">
+                <div class="pixel-landscape" aria-hidden="true">
+                  <span class="pixel-sun"></span>
+                  <span class="pixel-mountain pixel-mountain-one"></span>
+                  <span class="pixel-mountain pixel-mountain-two"></span>
+                  <span class="pixel-ground"></span>
+                </div>
+
+                <div class="system-switcher" aria-label="选择游戏平台">
+                  <button class="system-option" type="button" data-system="md" aria-pressed="false">
+                    <span class="device-illustration md-console" aria-hidden="true">
+                      <i></i><i></i>
+                    </span>
+                    <span>MD</span><small>16 BIT</small>
+                  </button>
+                  <button class="system-option is-active" type="button" data-system="fc" aria-pressed="true">
+                    <span class="device-illustration fc-console" aria-hidden="true">
+                      <i></i><i></i>
+                    </span>
+                    <span>FC</span><small>8 BIT</small>
+                  </button>
+                  <button class="system-option" type="button" data-system="gba" aria-pressed="false">
+                    <span class="device-illustration gba-console" aria-hidden="true">
+                      <i></i><i></i>
+                    </span>
+                    <span>GBA</span><small>32 BIT</small>
+                  </button>
+                </div>
+
+                <div class="idle-content" id="idle-content">
+                  <label class="rom-dropzone" id="rom-dropzone" for="rom-input">
+                    <span class="cartridge" aria-hidden="true">
+                      <span class="cartridge-label" id="cartridge-label">FC</span>
+                      <span class="cartridge-slot"></span>
+                    </span>
+                    <strong id="rom-drop-title">选择本地 ROM</strong>
+                    <span id="rom-drop-copy">或将文件拖到这里</span>
+                    <input
+                      id="rom-input"
+                      type="file"
+                      accept=".gen,.md,.bin,.smd,.nes,.fds,.gba,.zip,application/zip"
+                    />
+                  </label>
+
+                </div>
+                <p class="format-note">MD · FC · GBA ｜ ZIP 请先选择平台</p>
+              </div>
+
+              <div class="emulator-stage" id="emulator-stage" hidden>
+                <div id="game"></div>
+              </div>
+
+              <div class="loading-screen" id="loading-screen" hidden>
+                <div class="loading-bars" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+                <strong>正在启动模拟器核心</strong>
+                <span>首次运行需要下载模拟器组件</span>
+              </div>
+
+              <div class="error-screen" id="error-screen" hidden role="alert">
+                <strong>游戏未能启动</strong>
+                <p id="error-message"></p>
+                <button class="secondary-button" id="retry-button" type="button">
+                  重新选择
+                </button>
+              </div>
+
+              <div class="work-reminder" id="work-reminder" hidden role="dialog" aria-modal="true" aria-labelledby="work-reminder-title">
+                <div class="work-reminder-panel">
+                  <span class="time-limit-label">WORKDAY LIMIT · 05:00</span>
+                  <strong id="work-reminder-title">好好工作</strong>
+                  <p>今天的工作日游戏时间已用完，明天再来。</p>
+                  <button class="secondary-button" id="return-to-shelf-button" type="button">
+                    返回游戏陈列架
+                  </button>
+                </div>
+              </div>
+
+              <div class="state-library" id="state-library" hidden role="dialog" aria-modal="true" aria-labelledby="state-library-title">
+                <div class="state-library-panel">
+                  <header class="state-library-header">
+                    <div>
+                      <span class="state-library-kicker">BROWSER SAVE ARCHIVE</span>
+                      <h2 id="state-library-title">读取即时存档</h2>
+                    </div>
+                    <button class="state-library-close" id="state-library-close" type="button" aria-label="关闭存档列表">×</button>
+                  </header>
+                  <div class="state-list" id="state-list"></div>
+                  <p class="state-library-note" id="state-library-note">存档仅保存在当前浏览器</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mobile-game-controls" id="mobile-game-controls" hidden aria-label="触屏游戏控制器">
+            <div class="mobile-stick-panel">
+              <div class="mobile-stick" id="mobile-stick" role="application" aria-label="八方向虚拟摇杆">
+                <span class="mobile-stick-gate" aria-hidden="true"></span>
+                <span class="mobile-stick-handle" id="mobile-stick-handle" aria-hidden="true"></span>
+              </div>
+              <span class="mobile-control-caption">8-WAY</span>
+            </div>
+            <div class="mobile-action-panel" id="mobile-action-panel" data-system="fc">
+              <div class="mobile-shoulder-row">
+                <button type="button" data-input="10" data-standard-extra aria-label="L 键">L</button>
+                <button type="button" data-input="11" data-standard-extra aria-label="R 键">R</button>
+              </div>
+              <div class="mobile-action-grid">
+                <button class="mobile-action mobile-action-x" type="button" data-input="10" data-md-only aria-label="X 键">X</button>
+                <button class="mobile-action mobile-action-y" type="button" data-input="9" data-md-only aria-label="Y 键">Y</button>
+                <button class="mobile-action mobile-action-z" type="button" data-input="11" data-md-only aria-label="Z 键">Z</button>
+                <button class="mobile-action mobile-action-a" type="button" data-input="8" data-standard-input="8" data-md-input="1" aria-label="A 键">A</button>
+                <button class="mobile-action mobile-action-b" type="button" data-input="0" aria-label="B 键">B</button>
+                <button class="mobile-action mobile-action-c" type="button" data-input="8" data-md-only aria-label="C 键">C</button>
+              </div>
+              <div class="mobile-menu-row">
+                <button type="button" data-input="2">SELECT</button>
+                <button type="button" data-input="3">START</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="console-controls" aria-label="模拟器状态">
+            <div class="power-indicator">
+              <span class="power-led" id="power-led" aria-hidden="true"></span>
+              <span>POWER</span>
+            </div>
+            <div class="cabinet-controls" aria-hidden="true">
+              <span class="joystick"><i></i></span>
+              <span class="arcade-button arcade-button-red"></span>
+              <span class="arcade-button arcade-button-yellow"></span>
+            </div>
+            <div class="console-wordmark" aria-hidden="true">童年</div>
+            <div class="toolbar" id="toolbar" hidden>
+              <button class="icon-button" id="fullscreen-button" type="button" title="全屏">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
+                </svg>
+                <span class="sr-only">全屏</span>
+              </button>
+              <button class="text-button" id="change-game-button" type="button">
+                更换游戏
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <section class="game-library" id="game-library" aria-labelledby="library-label">
+          <div class="library-heading">
+            <div>
+              <p class="shelf-kicker">LOCAL CARTRIDGE ARCHIVE</p>
+              <h2 class="shelf-label" id="library-label">FC 游戏陈列架</h2>
+            </div>
+            <span id="library-status" aria-live="polite">保存在此浏览器</span>
+          </div>
+          <div class="game-shelf" id="game-shelf"></div>
+          <div class="shelf-drop-overlay" id="shelf-drop-overlay" aria-hidden="true">
+            <span class="drop-cartridge" aria-hidden="true">ROM</span>
+            <strong>松开卡带，加入陈列架</strong>
+            <small>解析游戏信息并保存在当前浏览器</small>
+          </div>
+        </section>
+      </section>
+
+      <section class="control-strip" aria-label="操作说明">
+        <div class="control-group">
+          <span class="control-title">方向</span>
+          <div class="key-row" aria-label="方向键">
+            <kbd>W</kbd><kbd>S</kbd><kbd>A</kbd><kbd>D</kbd>
+          </div>
+        </div>
+        <div class="strip-rule" aria-hidden="true"></div>
+        <div class="control-group">
+          <span class="control-title" id="action-label">A / B</span>
+          <div class="key-row" id="action-key-row">
+            <kbd>J</kbd><kbd>K</kbd>
+          </div>
+        </div>
+        <div class="strip-rule" aria-hidden="true"></div>
+        <div class="control-group wide">
+          <span class="control-title" id="menu-label">开始 / 选择</span>
+          <div class="key-row"><kbd>B</kbd><kbd>V</kbd></div>
+        </div>
+        <div class="strip-rule desktop-only" aria-hidden="true"></div>
+        <div class="control-group wide">
+          <span class="control-title">存档 / 读档</span>
+          <div class="key-row"><kbd>F5</kbd><kbd>F8</kbd></div>
+        </div>
+        <div class="strip-rule desktop-only" aria-hidden="true"></div>
+        <div class="control-group gamepad-group">
+          <span class="gamepad-icon" aria-hidden="true">◉</span>
+          <span>支持手柄与触屏</span>
+        </div>
+      </section>
+
+      <footer class="site-footer">
+        <div class="foot-marquee" aria-hidden="true">
+          <div class="foot-marquee-track">
+            <span>找回童年 · 插卡开机 · 本地运行 · 自动存档 ·</span>
+            <span>找回童年 · 插卡开机 · 本地运行 · 自动存档 ·</span>
+          </div>
+        </div>
+        <div class="footer-meta">
+          <p>存档保存在当前浏览器中。请使用你合法持有的游戏文件。</p>
+          <p id="save-status" aria-live="polite">等待插卡</p>
+        </div>
+      </footer>
+    </main>
+
+    <script src="./app.js?v=arcade-workbench-6"></script>
+  </body>
+</html>

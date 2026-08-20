@@ -27,3 +27,7 @@ pnpm-debug.log*
 .DS_Store
 .idea/
 .vscode/
+
+# local agent memory
+/.momonogi/
+/.codex/hooks.json

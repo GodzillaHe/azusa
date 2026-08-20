@@ -1,0 +1,8 @@
+{
+  "date": "2026-08-07",
+  "signals": "none",
+  "framework": "Next.js App Router",
+  "motion": "CSS only",
+  "preserve": [],
+  "introduce": ["custom tokens", "Workbench macrostructure", "interaction states"]
+}

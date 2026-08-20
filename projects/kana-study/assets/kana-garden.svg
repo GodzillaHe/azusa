@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 430" role="img" aria-labelledby="title desc">
+  <title id="title">假名小花园</title>
+  <desc id="desc">一幅日系绘本风插画，包含あ、カ、山丘、花朵和纸飞机。</desc>
+  <style>
+    :root{--ink:oklch(26% .02 250);--paper:oklch(97% .025 95);--pear:oklch(86% .16 95);--cyan:oklch(79% .12 225);--coral:oklch(70% .18 22);--mint:oklch(82% .13 150);--soft:oklch(92% .055 95);--font-kana:"Zen Maru Gothic",sans-serif}.ink{stroke:var(--ink);stroke-width:7;stroke-linecap:round;stroke-linejoin:round}.thin{stroke:var(--ink);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.paper{fill:var(--paper)}.pear{fill:var(--pear)}.cyan{fill:var(--cyan)}.coral{fill:var(--coral)}.mint{fill:var(--mint)}.soft{fill:var(--soft)}.none{fill:none}.kana{font-family:var(--font-kana);font-weight:700;fill:var(--ink)}
+  </style>
+  <path class="paper" d="M22 56Q32 22 70 28l502 12q42 4 46 46l-8 270q-6 44-52 46L74 394q-46-2-50-44Z"/>
+  <path class="soft thin" d="M52 302q80-92 166-20 106-104 208 10 78-74 164 2v82H52Z"/>
+  <path class="mint thin" d="M48 334q90-48 178 4 96-68 190-2 82-44 174 4v48H48Z"/>
+  <path class="pear ink" d="M92 90q8-34 42-34h94q34 0 38 34l-4 118q-2 32-34 36l-98-4q-34-4-36-36Z"/>
+  <text class="kana" x="179" y="185" font-size="116" text-anchor="middle">あ</text>
+  <path class="cyan ink" d="M380 106q12-28 42-26l96 10q32 4 32 36l-10 102q-4 34-38 34l-102-8q-32-4-30-38Z"/>
+  <text class="kana" x="458" y="200" font-size="108" text-anchor="middle">カ</text>
+  <path class="coral thin" d="m303 74 96-36-42 80-18-25Z"/>
+  <path class="none thin" d="M304 75q-52 28-68 84" stroke-dasharray="8 11"/>
+  <g class="thin">
+    <path class="coral" d="M108 329q-12-18 4-30 18-10 28 8 12-18 30-6 14 14-2 30-26 22-60-2Z"/>
+    <path class="none" d="M138 330v42"/>
+    <path class="pear" d="M292 314q-10-18 6-28 18-8 26 10 14-16 30-2 12 16-4 30-30 18-58-10Z"/>
+    <path class="none" d="M323 321v49"/>
+    <path class="cyan" d="M486 326q-10-20 8-28 16-8 26 10 12-18 28-4 12 14-2 28-30 20-60-6Z"/>
+    <path class="none" d="M516 330v42"/>
+  </g>
+  <path class="none thin" d="M72 70q36-28 64 0M508 316q34-26 66 2" opacity=".45"/>
+</svg>

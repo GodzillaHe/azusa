@@ -2,7 +2,7 @@
 
 ## Goal
 
-Deploy `image-generator` to the user's AI application space through the
+Deploy `projects/image-generator` to the user's AI application space through the
 `ai-deploy` MCP service. The deployed application must accept a user-provided
 OpenAI API key and an optional OpenAI-compatible API base URL. It must not
 require a platform-managed `OPENAI_API_KEY`.
@@ -92,7 +92,7 @@ build.
 The application needs a Node.js server because it exposes dynamic Next.js API
 routes. Static ZIP deployment alone cannot support image generation.
 
-The deployment source must place `image-generator` at the source root. The
+The deployment source must place `projects/image-generator` at the source root. The
 release process will create a dedicated Git deployment branch from that
 subdirectory and push it to the existing GitHub repository. `ai-deploy` will use
 that branch as the backend source. If the platform cannot select a branch from

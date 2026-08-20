@@ -8,24 +8,40 @@ Use this repo for small tools, agent utilities, MCP servers, and reusable skills
 
 ```text
 azusa/
-├── image-generator/  # Next.js GPT image generation app
+├── projects/         # Standalone small applications
+│   ├── fanxuan/         # Restaurant picker
+│   ├── gen-simulator/   # Browser-based retro game emulator
+│   ├── image-generator/ # Next.js GPT image generation app
+│   └── kana-study/      # Japanese kana learning page
 ├── tools/            # CLI tools and local scripts
 ├── mcp/              # MCP servers and tool definitions
-└── skills/           # Reusable agent skills and workflows
+├── skills/           # Reusable agent skills and workflows
+└── openclaw-plugins/ # OpenClaw plugin packages
 ```
 
 ## Current tools
 
 ### Decision Canvas Skill
 
-Reusable interactive questionnaire source lives in [`skills/decision-canvas`](skills/decision-canvas). It supports inline forms in Codex and autosaving local browser forms in Codex CLI and OpenClaw. See the [`skills` index](skills/README.md) for installation and validation.
+Reusable interactive questionnaire source lives in [`skills/decision-canvas`](skills/decision-canvas). It supports inline forms in Codex, autosaving local browser forms in Codex CLI and OpenClaw, and section-based Feishu Card 2.0 forms. See the [`skills` index](skills/README.md) for installation and validation.
+
+### Kana Garden
+
+`projects/kana-study` is a storybook-style Japanese kana learning page with a kana chart, browser pronunciation, flashcards, quizzes, and local progress tracking.
+
+```bash
+cd projects/kana-study
+python3 -m http.server 4174
+```
+
+Then open http://127.0.0.1:4174.
 
 ### Image Generator
 
-`image-generator` is a standalone Next.js app for `gpt-image-2` image generation.
+`projects/image-generator` is a standalone Next.js app for `gpt-image-2` image generation.
 
 ```bash
-cd image-generator
+cd projects/image-generator
 npm install
 cp .env.example .env.local
 npm run dev

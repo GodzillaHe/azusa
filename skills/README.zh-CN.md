@@ -8,7 +8,7 @@
 
 | Skill | 用途 | Agent 指令 |
 | --- | --- | --- |
-| [`decision-canvas`](decision-canvas/) | 通过 Codex 内联表单或本地自动保存表单收集相关决策，校验答案后交给 Agent 继续生成配置、规格说明或计划。 | [`SKILL.md`](decision-canvas/SKILL.md) |
+| [`decision-canvas`](decision-canvas/) | 通过 Codex 内联表单、本地自动保存表单或按 section 拆分的飞书 Card 2.0 表单收集相关决策。 | [`SKILL.md`](decision-canvas/SKILL.md) |
 
 ## 目录约定
 
@@ -71,6 +71,14 @@ openclaw skills check --json
 OpenClaw 把全局 Skill 安装在 `~/.openclaw/skills/`。仓库源码更新后需要重新执行安装命令；已有会话仍使用旧快照时，请新建会话。
 
 Decision Canvas 的本地表单运行时需要 Node.js，并在用户填写期间保持进程运行。它默认监听 `127.0.0.1`，只有运行 OpenClaw 的 Mac 可以访问。不要把当前未认证的服务绑定到 `0.0.0.0` 或暴露到公网。如需从其他设备访问，请先增加身份验证，并使用 Tailscale 等私有网络。
+
+在飞书中使用时，Decision Canvas 负责生成 Card 2.0 JSON 并转换标准化回调事件；认证、发送卡片和消费 `card.action.trigger` 继续使用独立的 `lark-im` 与 `lark-event` Skill。生成卡片：
+
+```bash
+node skills/decision-canvas/scripts/decision-canvas.mjs \
+  --config <questionnaire.json> \
+  --lark <输出目录>
+```
 
 ## 验证 Skill
 

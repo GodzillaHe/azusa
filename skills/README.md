@@ -8,7 +8,7 @@ This directory contains reusable agent skills maintained in this repository. Cod
 
 | Skill | Purpose | Instructions |
 | --- | --- | --- |
-| [`decision-canvas`](decision-canvas/) | Collect related decisions in a Codex inline form or an autosaving local browser form, validate the answers, and hand the complete result back to the agent. | [`SKILL.md`](decision-canvas/SKILL.md) |
+| [`decision-canvas`](decision-canvas/) | Collect related decisions in a Codex inline form, an autosaving local browser form, or section-based Feishu Card 2.0 forms. | [`SKILL.md`](decision-canvas/SKILL.md) |
 
 ## Layout
 
@@ -56,6 +56,14 @@ openclaw skills check --json
 OpenClaw stores globally installed Skills under `~/.openclaw/skills/`. Run the global install command again after updating the repository copy. Start a new conversation if an existing OpenClaw session still uses an older Skill snapshot.
 
 The questionnaire runtime requires Node.js and a persistent process while the user fills the form. Its `127.0.0.1` URL works only on the Mac running OpenClaw. A phone or another computer cannot open that URL. Do not bind the current unauthenticated server to `0.0.0.0` or expose it to the public internet; add authentication and a private network such as Tailscale before supporting remote devices.
+
+For Feishu, Decision Canvas generates Card 2.0 JSON and converts normalized callback events. Use the separate `lark-im` and `lark-event` skills for authentication, card delivery, and `card.action.trigger` consumption. Generate cards with:
+
+```bash
+node skills/decision-canvas/scripts/decision-canvas.mjs \
+  --config <questionnaire.json> \
+  --lark <output-directory>
+```
 
 ## Validate
 

@@ -74,6 +74,8 @@ Create one JSON document:
 
 Every question requires unique `id`, `type`, `title`, and boolean `required`. It may include `help` and `placeholder`.
 
+Use `placeholder` for an answer-neutral input hint, such as `按顺序填写 3 个助词` or `写出完整句子`. In quizzes, exercises, and assessments, neither `placeholder` nor `help` may reveal the expected answer, an answer-equivalent example, or text that can be copied to solve the current question. Put answer keys and grading references outside the questionnaire config.
+
 Only radio and checkbox questions may define `options`. Only checkbox questions may define selection `max`. Only number questions may define `min` and `step`; their `max` is the numeric upper bound.
 
 Section IDs, question IDs, and option values must contain only letters, digits, `.`, `_`, or `-`, start with a letter or digit, and must not contain `__detail__`. Avoid changing IDs after answers have been collected.

@@ -1,0 +1,19 @@
+{
+  "scannedAt": "2026-08-06",
+  "framework": "vanilla HTML, CSS and JavaScript",
+  "fontStack": "Inter, Arial Black and system monospace",
+  "palette": "dark arcade with red, cyan, yellow and green accents",
+  "motion": "motion-cut; no animation library",
+  "spacing": "ad hoc pixel values; no token scale",
+  "preserve": [
+    "arcade identity",
+    "multi-platform information architecture",
+    "existing emulator and ROM library behavior"
+  ],
+  "introduce": [
+    "Hallmark Workbench macrostructure",
+    "Hum token system",
+    "purposeful microinteractions",
+    "mobile discipline"
+  ]
+}

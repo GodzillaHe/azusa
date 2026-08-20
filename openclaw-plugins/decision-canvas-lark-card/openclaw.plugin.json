@@ -1,0 +1,19 @@
+{
+  "id": "decision-canvas-lark-card",
+  "name": "Decision Canvas Lark Card",
+  "description": "Sends generated Decision Canvas Card 2.0 files to the active Feishu conversation.",
+  "version": "0.1.0",
+  "activation": {
+    "onStartup": true
+  },
+  "contracts": {
+    "tools": [
+      "decision_canvas_lark_send"
+    ]
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}
