@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-这个目录存放 Azusa 维护的可复用 Agent Skills。仓库中的文件是源码；Codex 和 OpenClaw 使用各自的安装目录，修改源码不会自动更新已安装的副本。
+这个目录存放 Azusa 维护的跨宿主可复用 Agent Skills。仓库中的文件是源码；Codex 和 OpenClaw 使用各自的安装目录，修改源码不会自动更新已安装的副本。宿主专用的运行时扩展应放在 [`plugins/`](../plugins/)，不放在这里。
 
 ## 索引
 
@@ -72,7 +72,7 @@ OpenClaw 把全局 Skill 安装在 `~/.openclaw/skills/`。仓库源码更新后
 
 Decision Canvas 的本地表单运行时需要 Node.js，并在用户填写期间保持进程运行。它默认监听 `127.0.0.1`，只有运行 OpenClaw 的 Mac 可以访问。不要把当前未认证的服务绑定到 `0.0.0.0` 或暴露到公网。如需从其他设备访问，请先增加身份验证，并使用 Tailscale 等私有网络。
 
-在飞书中使用时，Decision Canvas 负责生成 Card 2.0 JSON 并转换标准化回调事件；认证、发送卡片和消费 `card.action.trigger` 继续使用独立的 `lark-im` 与 `lark-event` Skill。生成卡片：
+在飞书中使用时，Decision Canvas 负责生成 Card 2.0 JSON 并转换标准化回调事件。可选的 OpenClaw 专用 [`decision-canvas-lark-card`](../plugins/openclaw/decision-canvas-lark-card/) 插件通过 `decision_canvas_lark_send` 把卡片发送到当前飞书会话；认证和 `card.action.trigger` 事件消费仍由 OpenClaw 飞书集成负责。生成卡片：
 
 ```bash
 node skills/decision-canvas/scripts/decision-canvas.mjs \

@@ -2,7 +2,7 @@
 
 [中文说明](README.zh-CN.md)
 
-This directory contains reusable agent skills maintained in this repository. Codex and OpenClaw use separate installation directories, while the repository copy remains the source of truth.
+This directory contains portable agent skills maintained in this repository. Codex and OpenClaw use separate installation directories, while the repository copy remains the source of truth. Host-specific runtime extensions belong in [`plugins/`](../plugins/), not here.
 
 ## Index
 
@@ -57,7 +57,7 @@ OpenClaw stores globally installed Skills under `~/.openclaw/skills/`. Run the g
 
 The questionnaire runtime requires Node.js and a persistent process while the user fills the form. Its `127.0.0.1` URL works only on the Mac running OpenClaw. A phone or another computer cannot open that URL. Do not bind the current unauthenticated server to `0.0.0.0` or expose it to the public internet; add authentication and a private network such as Tailscale before supporting remote devices.
 
-For Feishu, Decision Canvas generates Card 2.0 JSON and converts normalized callback events. Use the separate `lark-im` and `lark-event` skills for authentication, card delivery, and `card.action.trigger` consumption. Generate cards with:
+For Feishu, Decision Canvas generates Card 2.0 JSON and converts normalized callback events. The optional OpenClaw-only [`decision-canvas-lark-card`](../plugins/openclaw/decision-canvas-lark-card/) plugin exposes `decision_canvas_lark_send` for delivery in the active Feishu conversation. Authentication and `card.action.trigger` event consumption remain owned by the OpenClaw Feishu integration. Generate cards with:
 
 ```bash
 node skills/decision-canvas/scripts/decision-canvas.mjs \

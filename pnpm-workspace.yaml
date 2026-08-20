@@ -1,0 +1,6 @@
+packages:
+  - "projects/*"
+  - "tools/*"
+  - "plugins/*/*"
+
+autoInstallPeers: false

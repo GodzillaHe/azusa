@@ -10,19 +10,19 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "next": "latest",
-    "openai": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "typescript": "latest"
+    "@types/node": "25.9.3",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "next": "16.2.9",
+    "openai": "6.43.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "typescript": "6.0.3"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "latest",
-    "eslint": "latest",
-    "eslint-config-next": "latest",
-    "vitest": "latest"
+    "@vitejs/plugin-react": "6.0.2",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.9",
+    "vitest": "4.1.9"
   }
 }
